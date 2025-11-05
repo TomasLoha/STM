@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  disponible      Boolean
+  fechaNacimiento DateTime
+  dni             String    @unique
+  nombre          String
+  apellidos       String
+  email           String    @unique
+  sexo            String
+  estadoCivil     String
+  obraSocial      String
+  deletedAt       DateTime?
+  Forms           Form[]
+}
+
+model Form {
+  id             String           @id @default(uuid())
+  fecha          DateTime         @default(now())
+  disponible     Boolean
+  tipoConsulta   EnumTipoConsulta
+  sintomas       String
+  observaciones  String
+  diagnostico    String
+  userId         String
+  detalle_receta Detalle_receta[]
+  user           User             @relation(fields: [userId], references: [id])
+  meeting        Meeting?
+}
+
+model Meeting {
+  id         String  @id @default(uuid())
+  disponible Boolean
+  text       String  @db.Text
+  formId     String  @unique
+  form       Form    @relation(fields: [formId], references: [id])
+}
+
+model Detalle_receta {
+  id         String   @id @default(uuid())
+  fecha      DateTime
+  disponible Boolean
+  cantidad   Int
+  recetaId   String
+  formId     String?
+  Form       Form?    @relation(fields: [formId], references: [id])
+  receta     Receta   @relation(fields: [recetaId], references: [id])
+}
+
+model Receta {
+  id             String           @id @default(uuid())
+  disponible     Boolean
+  nombre         String
+  descripcion    String
+  precio         Float
+  detalle_receta Detalle_receta[]
+}
+
+enum EnumTipoConsulta {
+  PRESENCIAL
+  TELEFONICA
+  VIDEOLLAMADA
+}
